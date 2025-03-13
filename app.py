@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # ✅ Install Chrome in a User-Writable Directory (/tmp/chrome/)
 def setup_chrome():
-    """Ensures Chrome and ChromeDriver are installed correctly on Render."""
+    """Downloads and installs Chrome in a writable directory on Render."""
     try:
         print("🔄 Checking for Chrome installation...")
 
@@ -25,7 +25,10 @@ def setup_chrome():
             # ✅ Create a writable directory
             os.makedirs(chrome_dir, exist_ok=True)
 
-            # ✅ Download a portable version of Chrome (known to work on Render)
+            # ✅ Disable tput errors from Render's default scripts
+            os.environ["TERM"] = "dumb"
+
+            # ✅ Download a portable version of Chrome (proven to work on Render)
             os.system(f"wget -q -O {chrome_dir}/chrome.zip https://storage.googleapis.com/chrome-for-render/chrome-linux.zip")
 
             # ✅ Unzip Chrome (No Root Needed)
@@ -49,6 +52,7 @@ def setup_chrome():
 
     except Exception as e:
         print(f"❌ Error installing Chrome: {e}")
+
 
 
 # ✅ Set Chrome Options
