@@ -7,18 +7,24 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 app = Flask(__name__)
 
-# ✅ Install Chrome on Render
+# ✅ Install Chrome on Render (No Root Required)
 def install_chrome():
-    """Ensures Chrome is installed on Render before running the scraper."""
+    """Ensures Chrome is installed on Render in a user-accessible directory."""
     try:
         print("🔄 Installing Chrome...")
-        os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb")
-        os.system("apt-get update && apt-get install -y ./google-chrome-stable_current_amd64.deb")
-        print("✅ Chrome installed successfully.")
 
-        # 🔍 Print the actual Chrome binary path (for debugging)
-        os.system("which google-chrome-stable")
-        os.system("ls -l /usr/bin/ | grep chrome")
+        # ✅ Create a directory for Chrome (No Root Access Required)
+        os.system("mkdir -p /opt/google/chrome")
+        os.system("cd /opt/google/chrome")
+
+        # ✅ Download Chrome without using `apt-get`
+        os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb")
+        os.system("dpkg -x google-chrome-stable_current_amd64.deb /opt/google/chrome")
+
+        # ✅ Set the environment variable for Chrome binary path
+        chrome_binary_path = "/opt/google/chrome/opt/google/chrome/chrome"
+        os.environ["GOOGLE_CHROME_BIN"] = chrome_binary_path
+        print(f"✅ Chrome installed successfully at {chrome_binary_path}")
 
     except Exception as e:
         print(f"❌ Error installing Chrome: {e}")
@@ -28,15 +34,15 @@ def get_chrome_options():
     """Sets correct Chrome options for headless execution on Render."""
     chrome_options = webdriver.ChromeOptions()
     
-    # ✅ Dynamically get Chrome binary path from environment variables
-    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/google-chrome-stable")
+    # ✅ Use the dynamically set Chrome binary path from environment variables
+    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/opt/google/chrome/opt/google/chrome/chrome")
     chrome_options.binary_location = chrome_binary_path
 
     chrome_options.add_argument("--headless")  # Run without GUI
     chrome_options.add_argument("--no-sandbox")  # Required for Render
     chrome_options.add_argument("--disable-dev-shm-usage")  # Prevent crashes
     chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging support
-    
+
     return chrome_options
 
 # ✅ Home Route to Confirm API is Running
