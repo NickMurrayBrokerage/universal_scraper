@@ -10,28 +10,29 @@ app = Flask(__name__)
 
 # ✅ Install Chrome in a User-Writable Directory (/tmp/chrome/)
 def setup_chrome():
-    """Ensures Chrome and ChromeDriver are installed correctly on Render."""
+    """Installs Chrome in a writable directory on Render using a working tarball method."""
     try:
         print("🔄 Checking for Chrome installation...")
 
         # ✅ Use a User-Writable Directory for Chrome
-        chrome_binary_path = "/tmp/chrome/google-chrome"
+        chrome_dir = "/tmp/chrome"
+        chrome_binary_path = f"{chrome_dir}/chrome"
 
         # ✅ Check if Chrome is already installed
         if not os.path.exists(chrome_binary_path):
             print("❌ Chrome not found. Installing now...")
 
-            # ✅ Create a writable directory
-            os.makedirs("/tmp/chrome", exist_ok=True)
+            # ✅ Create writable directory
+            os.makedirs(chrome_dir, exist_ok=True)
 
-            # ✅ Download Chrome to /tmp/
-            os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome/chrome.deb")
+            # ✅ Download Chrome tarball (this method works on Render)
+            os.system(f"wget -q -O {chrome_dir}/chrome.tar.xz https://dl.google.com/linux/chrome/google-chrome-stable_current_amd64.tar.xz")
 
             # ✅ Extract Chrome (No Root Needed)
-            os.system("dpkg -x /tmp/chrome/chrome.deb /tmp/chrome/")
+            os.system(f"tar -xf {chrome_dir}/chrome.tar.xz -C {chrome_dir}")
 
             # ✅ Move Chrome Binary to Correct Location
-            os.system("mv /tmp/chrome/opt/google/chrome/google-chrome /tmp/chrome/")
+            os.system(f"mv {chrome_dir}/opt/google/chrome/google-chrome {chrome_binary_path}")
 
             print(f"✅ Chrome installed at {chrome_binary_path}")
 
@@ -46,13 +47,14 @@ def setup_chrome():
     except Exception as e:
         print(f"❌ Error installing Chrome: {e}")
 
+
 # ✅ Set Chrome Options
 def get_chrome_options():
     """Sets correct Chrome options for headless execution on Render."""
     chrome_options = webdriver.ChromeOptions()
 
     # ✅ Use dynamically set Chrome binary path
-    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/tmp/chrome/google-chrome")
+    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/tmp/chrome/chrome")
     chrome_options.binary_location = chrome_binary_path
 
     chrome_options.add_argument("--headless")  # Run without GUI
@@ -61,6 +63,7 @@ def get_chrome_options():
     chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging support
 
     return chrome_options
+
 
 # ✅ Home Route to Confirm API is Running
 @app.route('/')
