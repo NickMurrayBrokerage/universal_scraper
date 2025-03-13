@@ -8,20 +8,43 @@ import chromedriver_autoinstaller
 
 app = Flask(__name__)
 
-# ✅ Auto-install ChromeDriver (Replaces manual installation)
+# ✅ Auto-install Chrome and ChromeDriver
 def setup_chrome():
-    """Automatically installs ChromeDriver and Chrome binary."""
+    """Ensures Chrome and ChromeDriver are installed on Render."""
     try:
-        print("🔄 Checking ChromeDriver...")
-        chromedriver_autoinstaller.install()  # ✅ Auto-installs correct version
+        print("🔄 Checking Chrome installation...")
+
+        # ✅ Check if Chrome is already installed
+        chrome_binary_path = "/usr/bin/google-chrome-stable"
+
+        if not os.path.exists(chrome_binary_path):
+            print("❌ Chrome not found. Installing now...")
+
+            # ✅ Download & extract Chrome in a non-root location
+            os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O chrome.deb")
+            os.system("dpkg -x chrome.deb /tmp/chrome")
+            os.system("mv /tmp/chrome/opt/google/chrome /usr/bin/")
+
+            print(f"✅ Chrome installed at {chrome_binary_path}")
+
+        # ✅ Set environment variable for Chrome binary
+        os.environ["GOOGLE_CHROME_BIN"] = chrome_binary_path
+
+        # ✅ Auto-install ChromeDriver
+        chromedriver_autoinstaller.install()
         print("✅ ChromeDriver is ready.")
+
     except Exception as e:
-        print(f"❌ Error installing ChromeDriver: {e}")
+        print(f"❌ Error installing Chrome: {e}")
 
 # ✅ Set Chrome Options
 def get_chrome_options():
     """Sets correct Chrome options for headless execution on Render."""
     chrome_options = webdriver.ChromeOptions()
+
+    # ✅ Use dynamically set Chrome binary path
+    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/google-chrome-stable")
+    chrome_options.binary_location = chrome_binary_path
 
     chrome_options.add_argument("--headless")  # Run without GUI
     chrome_options.add_argument("--no-sandbox")  # Required for Render
@@ -46,7 +69,7 @@ def run_scraper():
         return jsonify({"error": "No URL provided"}), 400
 
     try:
-        # ✅ Ensure ChromeDriver is installed
+        # ✅ Ensure Chrome and ChromeDriver are installed
         setup_chrome()
 
         # ✅ Initialize ChromeDriver
