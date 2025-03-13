@@ -8,34 +8,34 @@ import chromedriver_autoinstaller
 
 app = Flask(__name__)
 
-# ✅ Install Chrome in a User-Writable Directory
+# ✅ Install Chrome in a User-Writable Directory (/tmp/chrome/)
 def setup_chrome():
     """Ensures Chrome and ChromeDriver are installed correctly on Render."""
     try:
         print("🔄 Checking for Chrome installation...")
 
         # ✅ Use a User-Writable Directory for Chrome
-        chrome_binary_path = "/home/render/chrome/google-chrome"
+        chrome_binary_path = "/tmp/chrome/google-chrome"
 
         # ✅ Check if Chrome is already installed
         if not os.path.exists(chrome_binary_path):
             print("❌ Chrome not found. Installing now...")
 
-            # ✅ Create a directory for Chrome
-            os.makedirs("/home/render/chrome", exist_ok=True)
+            # ✅ Create a writable directory
+            os.makedirs("/tmp/chrome", exist_ok=True)
 
-            # ✅ Download Chrome without using `apt-get`
-            os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /home/render/chrome/chrome.deb")
+            # ✅ Download Chrome to /tmp/
+            os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome/chrome.deb")
 
             # ✅ Extract Chrome (No Root Needed)
-            os.system("dpkg -x /home/render/chrome/chrome.deb /home/render/chrome/")
+            os.system("dpkg -x /tmp/chrome/chrome.deb /tmp/chrome/")
 
             # ✅ Move Chrome Binary to Correct Location
-            os.system("mv /home/render/chrome/opt/google/chrome/google-chrome /home/render/chrome/")
+            os.system("mv /tmp/chrome/opt/google/chrome/google-chrome /tmp/chrome/")
 
             print(f"✅ Chrome installed at {chrome_binary_path}")
 
-        # ✅ Set Chrome Environment Variable
+        # ✅ Set environment variable for Chrome binary
         os.environ["GOOGLE_CHROME_BIN"] = chrome_binary_path
         print(f"✅ GOOGLE_CHROME_BIN set to {chrome_binary_path}")
 
@@ -48,17 +48,17 @@ def setup_chrome():
 
 # ✅ Set Chrome Options
 def get_chrome_options():
-    """Sets Chrome options for headless execution on Render."""
+    """Sets correct Chrome options for headless execution on Render."""
     chrome_options = webdriver.ChromeOptions()
 
-    # ✅ Use the Installed Chrome Binary
-    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/home/render/chrome/google-chrome")
+    # ✅ Use dynamically set Chrome binary path
+    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/tmp/chrome/google-chrome")
     chrome_options.binary_location = chrome_binary_path
 
-    chrome_options.add_argument("--headless")  # Run in Headless Mode
+    chrome_options.add_argument("--headless")  # Run without GUI
     chrome_options.add_argument("--no-sandbox")  # Required for Render
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Prevent Crashes
-    chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging Support
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Prevent crashes
+    chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging support
 
     return chrome_options
 
