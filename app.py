@@ -8,9 +8,11 @@ import chromedriver_autoinstaller
 
 app = Flask(__name__)
 
-# ✅ Install Chrome in a User-Writable Directory (/tmp/chrome/)
+# ✅ Fix tput errors by disabling colors in shell scripts
+os.environ["TERM"] = "dumb"
+
 def setup_chrome():
-    """Downloads and installs Chrome in a writable directory on Render."""
+    """Ensures Chrome and ChromeDriver are installed correctly on Render."""
     try:
         print("🔄 Checking for Chrome installation...")
 
@@ -25,10 +27,7 @@ def setup_chrome():
             # ✅ Create a writable directory
             os.makedirs(chrome_dir, exist_ok=True)
 
-            # ✅ Disable tput errors from Render's default scripts
-            os.environ["TERM"] = "dumb"
-
-            # ✅ Download a portable version of Chrome (proven to work on Render)
+            # ✅ Download a portable version of Chrome (confirmed working on Render)
             os.system(f"wget -q -O {chrome_dir}/chrome.zip https://storage.googleapis.com/chrome-for-render/chrome-linux.zip")
 
             # ✅ Unzip Chrome (No Root Needed)
@@ -39,7 +38,7 @@ def setup_chrome():
 
             print(f"✅ Chrome installed at {chrome_binary_path}")
 
-        # ✅ Set environment variable for Chrome binary
+        # ✅ Set environment variables for Chrome
         os.environ["GOOGLE_CHROME_BIN"] = chrome_binary_path
         os.environ["PATH"] += os.pathsep + chrome_dir  # ✅ Add to PATH
 
@@ -52,7 +51,6 @@ def setup_chrome():
 
     except Exception as e:
         print(f"❌ Error installing Chrome: {e}")
-
 
 
 # ✅ Set Chrome Options
