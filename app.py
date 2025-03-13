@@ -10,34 +10,38 @@ app = Flask(__name__)
 
 # ✅ Install Chrome in a User-Writable Directory (/tmp/chrome/)
 def setup_chrome():
-    """Downloads and installs Chrome in a writable directory on Render."""
+    """Ensures Chrome and ChromeDriver are installed correctly on Render."""
     try:
         print("🔄 Checking for Chrome installation...")
 
         # ✅ Set Chrome binary path inside /tmp/ (a writable directory)
-        chrome_binary_path = "/tmp/chrome/chrome"
+        chrome_dir = "/tmp/chrome"
+        chrome_binary_path = f"{chrome_dir}/chrome"
 
         # ✅ Check if Chrome is already installed
         if not os.path.exists(chrome_binary_path):
             print("❌ Chrome not found. Installing now...")
 
             # ✅ Create a writable directory
-            os.makedirs("/tmp/chrome", exist_ok=True)
+            os.makedirs(chrome_dir, exist_ok=True)
 
-            # ✅ Download a pre-built, portable version of Chrome (proven to work on Render)
-            os.system("wget -q -O /tmp/chrome/chrome.zip https://storage.googleapis.com/chrome-for-render/chrome-linux.zip")
+            # ✅ Download a portable version of Chrome (known to work on Render)
+            os.system(f"wget -q -O {chrome_dir}/chrome.zip https://storage.googleapis.com/chrome-for-render/chrome-linux.zip")
 
             # ✅ Unzip Chrome (No Root Needed)
-            os.system("unzip -q /tmp/chrome/chrome.zip -d /tmp/chrome/")
+            os.system(f"unzip -q {chrome_dir}/chrome.zip -d {chrome_dir}")
 
             # ✅ Set executable permissions
-            os.system("chmod +x /tmp/chrome/chrome")
+            os.system(f"chmod +x {chrome_binary_path}")
 
             print(f"✅ Chrome installed at {chrome_binary_path}")
 
         # ✅ Set environment variable for Chrome binary
         os.environ["GOOGLE_CHROME_BIN"] = chrome_binary_path
+        os.environ["PATH"] += os.pathsep + chrome_dir  # ✅ Add to PATH
+
         print(f"✅ GOOGLE_CHROME_BIN set to {chrome_binary_path}")
+        print(f"✅ PATH updated to include {chrome_dir}")
 
         # ✅ Install ChromeDriver Automatically
         chromedriver_autoinstaller.install()
@@ -47,14 +51,13 @@ def setup_chrome():
         print(f"❌ Error installing Chrome: {e}")
 
 
-
 # ✅ Set Chrome Options
 def get_chrome_options():
     """Sets correct Chrome options for headless execution on Render."""
     chrome_options = webdriver.ChromeOptions()
 
-    # ✅ Use dynamically set Chrome binary path
-    chrome_binary_path = os.getenv("GOOGLE_CHROME_BIN", "/tmp/chrome/chrome")
+    # ✅ Explicitly use the Chrome binary path
+    chrome_binary_path = "/tmp/chrome/chrome"
     chrome_options.binary_location = chrome_binary_path
 
     chrome_options.add_argument("--headless")  # Run without GUI
@@ -63,6 +66,7 @@ def get_chrome_options():
     chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging support
 
     return chrome_options
+
 
 # ✅ Home Route to Confirm API is Running
 @app.route('/')
