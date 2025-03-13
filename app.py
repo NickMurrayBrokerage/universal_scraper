@@ -4,6 +4,11 @@ import subprocess
 
 app = Flask(__name__)
 
+# ✅ Home Route to Confirm API is Running
+@app.route('/')
+def home():
+    return "Universal Scraper is running!", 200
+
 # ✅ Existing Playwright Scraper
 @app.route('/extract', methods=['POST'])
 def extract_data():
