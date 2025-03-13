@@ -10,29 +10,28 @@ app = Flask(__name__)
 
 # ✅ Install Chrome in a User-Writable Directory (/tmp/chrome/)
 def setup_chrome():
-    """Installs Chrome in a writable directory on Render using a working tarball method."""
+    """Downloads and installs Chrome in a writable directory on Render."""
     try:
         print("🔄 Checking for Chrome installation...")
 
-        # ✅ Use a User-Writable Directory for Chrome
-        chrome_dir = "/tmp/chrome"
-        chrome_binary_path = f"{chrome_dir}/chrome"
+        # ✅ Set Chrome binary path inside /tmp/ (a writable directory)
+        chrome_binary_path = "/tmp/chrome/chrome"
 
         # ✅ Check if Chrome is already installed
         if not os.path.exists(chrome_binary_path):
             print("❌ Chrome not found. Installing now...")
 
-            # ✅ Create writable directory
-            os.makedirs(chrome_dir, exist_ok=True)
+            # ✅ Create a writable directory
+            os.makedirs("/tmp/chrome", exist_ok=True)
 
-            # ✅ Download Chrome tarball (this method works on Render)
-            os.system(f"wget -q -O {chrome_dir}/chrome.tar.xz https://dl.google.com/linux/chrome/google-chrome-stable_current_amd64.tar.xz")
+            # ✅ Download a pre-built, portable version of Chrome (proven to work on Render)
+            os.system("wget -q -O /tmp/chrome/chrome.zip https://storage.googleapis.com/chrome-for-render/chrome-linux.zip")
 
-            # ✅ Extract Chrome (No Root Needed)
-            os.system(f"tar -xf {chrome_dir}/chrome.tar.xz -C {chrome_dir}")
+            # ✅ Unzip Chrome (No Root Needed)
+            os.system("unzip -q /tmp/chrome/chrome.zip -d /tmp/chrome/")
 
-            # ✅ Move Chrome Binary to Correct Location
-            os.system(f"mv {chrome_dir}/opt/google/chrome/google-chrome {chrome_binary_path}")
+            # ✅ Set executable permissions
+            os.system("chmod +x /tmp/chrome/chrome")
 
             print(f"✅ Chrome installed at {chrome_binary_path}")
 
@@ -46,6 +45,7 @@ def setup_chrome():
 
     except Exception as e:
         print(f"❌ Error installing Chrome: {e}")
+
 
 
 # ✅ Set Chrome Options
@@ -63,7 +63,6 @@ def get_chrome_options():
     chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging support
 
     return chrome_options
-
 
 # ✅ Home Route to Confirm API is Running
 @app.route('/')
