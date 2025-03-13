@@ -6,14 +6,26 @@ import chromedriver_autoinstaller
 
 app = Flask(__name__)
 
+# ✅ Install Chrome on Render
+def install_chrome():
+    """Ensures Chrome is installed on Render before running the scraper."""
+    try:
+        print("🔄 Installing Chrome...")
+        os.system("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb")
+        os.system("apt-get update && apt-get install -y ./google-chrome-stable_current_amd64.deb")
+        print("✅ Chrome installed successfully.")
+    except Exception as e:
+        print(f"❌ Error installing Chrome: {e}")
+
 # ✅ Home Route to Confirm API is Running
 @app.route('/')
 def home():
     return "Universal Scraper is running!", 200
 
-# ✅ Existing Playwright Scraper
+# ✅ Playwright-based Scraper
 @app.route('/extract', methods=['POST'])
 def extract_data():
+    """Scrapes rental data using Playwright."""
     data = request.json
     url = data.get("url")
 
@@ -45,9 +57,10 @@ def extract_data():
             browser.close()
             return jsonify({"error": str(e)}), 500
 
-# ✅ New Endpoint to Run Universal Scraper (with Corrected subprocess.run)
+# ✅ Run Selenium-based Universal Scraper
 @app.route('/run-scraper', methods=['POST'])
 def run_scraper():
+    """Runs the Selenium-based universal scraper."""
     data = request.json
     property_url = data.get("url")
 
@@ -55,13 +68,19 @@ def run_scraper():
         return jsonify({"error": "No URL provided"}), 400
 
     try:
-        # Run Selenium scraper and capture output
+        # ✅ Ensure Chrome is installed before running the scraper
+        install_chrome()
+
+        # ✅ Run Selenium scraper and capture output
         result = subprocess.run(
             ["python", "universal_scraper.py", "--url", property_url],
             capture_output=True, text=True
         )
 
-        return jsonify({"status": "Scraper started", "output": result.stdout})
+        return jsonify({
+            "status": "Scraper started",
+            "output": result.stdout
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
