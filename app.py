@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
 import subprocess
+import os
+import chromedriver_autoinstaller
 
 app = Flask(__name__)
 
@@ -43,7 +45,7 @@ def extract_data():
             browser.close()
             return jsonify({"error": str(e)}), 500
 
-# ✅ New Endpoint to Run Universal Scraper
+# ✅ New Endpoint to Run Universal Scraper (with Corrected subprocess.run)
 @app.route('/run-scraper', methods=['POST'])
 def run_scraper():
     data = request.json
@@ -52,10 +54,17 @@ def run_scraper():
     if not property_url:
         return jsonify({"error": "No URL provided"}), 400
 
-    # Run the Selenium-based universal scraper
-    result = subprocess.run(["python", "universal_scraper.py", property_url], capture_output=True, text=True)
+    try:
+        # Run Selenium scraper and capture output
+        result = subprocess.run(
+            ["python", "universal_scraper.py", "--url", property_url],
+            capture_output=True, text=True
+        )
 
-    return jsonify({"status": "Scraper started", "output": result.stdout})
+        return jsonify({"status": "Scraper started", "output": result.stdout})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ✅ Render Deployment Config
 if __name__ == '__main__':
