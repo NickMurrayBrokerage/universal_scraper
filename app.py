@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify
-from playwright.sync_api import sync_playwright
-import subprocess
 import os
-import chromedriver_autoinstaller
+import subprocess
+from flask import Flask, request, jsonify
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 app = Flask(__name__)
 
@@ -17,45 +18,21 @@ def install_chrome():
     except Exception as e:
         print(f"❌ Error installing Chrome: {e}")
 
+# ✅ Set Chrome Options
+def get_chrome_options():
+    """Sets correct Chrome options for headless execution on Render."""
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = "/usr/bin/google-chrome"  # ✅ Ensure correct Chrome path
+    chrome_options.add_argument("--headless")  # Run without GUI
+    chrome_options.add_argument("--no-sandbox")  # Required for Render
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Prevent crashes
+    chrome_options.add_argument("--remote-debugging-port=9222")  # Debugging support
+    return chrome_options
+
 # ✅ Home Route to Confirm API is Running
 @app.route('/')
 def home():
     return "Universal Scraper is running!", 200
-
-# ✅ Playwright-based Scraper
-@app.route('/extract', methods=['POST'])
-def extract_data():
-    """Scrapes rental data using Playwright."""
-    data = request.json
-    url = data.get("url")
-
-    if not url:
-        return jsonify({"error": "No URL provided"}), 400
-
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(url, timeout=15000)
-
-        try:
-            property_name = page.inner_text("h1")  # Adjust selector as needed
-            address = page.inner_text(".property-address")  # Modify based on website
-            rent_elements = page.query_selector_all(".rent-price")
-            rents = [rent.inner_text() for rent in rent_elements]
-            amenities = [a.inner_text() for a in page.query_selector_all(".amenities-list li")]
-
-            browser.close()
-
-            return jsonify({
-                "propertyName": property_name,
-                "address": address,
-                "rents": rents,
-                "amenities": amenities
-            })
-        
-        except Exception as e:
-            browser.close()
-            return jsonify({"error": str(e)}), 500
 
 # ✅ Run Selenium-based Universal Scraper
 @app.route('/run-scraper', methods=['POST'])
@@ -68,18 +45,22 @@ def run_scraper():
         return jsonify({"error": "No URL provided"}), 400
 
     try:
-        # ✅ Ensure Chrome is installed before running the scraper
+        # ✅ Ensure Chrome is installed
         install_chrome()
 
-        # ✅ Run Selenium scraper and capture output
-        result = subprocess.run(
-            ["python", "universal_scraper.py", "--url", property_url],
-            capture_output=True, text=True
-        )
+        # ✅ Initialize ChromeDriver with correct binary path
+        chrome_options = get_chrome_options()
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+
+        # ✅ Run Selenium scraper (Replace with your scraping logic)
+        driver.get(property_url)
+        page_title = driver.title
+        driver.quit()
 
         return jsonify({
             "status": "Scraper started",
-            "output": result.stdout
+            "pageTitle": page_title
         })
 
     except Exception as e:
