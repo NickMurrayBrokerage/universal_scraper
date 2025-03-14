@@ -1,7 +1,10 @@
-FROM debian:bullseye-slim
+FROM ubuntu:20.04
 
-# Install build tools, dependencies, and libraries required by Chrome
-RUN apt-get update && apt-get install -y \
+RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list \
+    && echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list
+
+# Configure apt sources and install build tools and dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     unzip \
     libglib2.0-0 \
@@ -10,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     libdbus-1-3 \
     libxt6 \
     x11-utils \
-    --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
