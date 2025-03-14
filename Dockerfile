@@ -49,6 +49,7 @@ RUN echo "Starting Chrome download..." \
     && ls -l /opt/chrome/chrome-linux64/ \
     && mv /opt/chrome/chrome-linux64/chrome /usr/local/bin/chrome || { echo "mv failed"; exit 1; } \
     && chmod 755 /usr/local/bin/chrome \
+    && chown root:root /usr/local/bin/chrome \
     && ls -l /usr/local/bin/chrome \
     && echo "Chrome installation completed"
 
@@ -62,5 +63,5 @@ ENV GOOGLE_CHROME_BIN=/usr/local/bin/chrome
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Run the app with Gunicorn using entrypoint for debug
-CMD ["/entrypoint.sh"]
+# Run the app with Gunicorn using entrypoint for debug, ensuring shell expansion
+CMD ["/bin/bash", "/entrypoint.sh"]
