@@ -15,39 +15,29 @@ logger = logging.getLogger(__name__)
 os.environ["TERM"] = "dumb"
 
 def setup_chrome():
-    """Ensures Chrome and ChromeDriver are installed correctly on Render."""
-    chrome_dir = "/tmp/chrome"
-    chrome_binary_path = f"{chrome_dir}/chrome"
+    """Sets up Chrome and ChromeDriver for Render."""
+    chrome_binary_path = "/usr/bin/google-chrome"  # Pre-installed by build.sh
     chromedriver_path = "/tmp/chromedriver"
 
     try:
-        if not os.path.exists(chrome_binary_path):
-            logger.info("❌ Chrome not found. Installing now...")
-            os.makedirs(chrome_dir, exist_ok=True)
-            os.system(f"wget -q -O {chrome_dir}/chrome.zip https://storage.googleapis.com/chrome-for-render/chrome-linux.zip")
-            os.system(f"unzip -q {chrome_dir}/chrome.zip -d {chrome_dir}")
-            os.system(f"chmod +x {chrome_binary_path}")
-            logger.info(f"✅ Chrome installed at {chrome_binary_path}")
-
         if not os.path.exists(chromedriver_path):
             logger.info("❌ ChromeDriver not found. Installing now...")
-            chromedriver_autoinstaller.install()
-            os.system(f"mv $(which chromedriver) {chromedriver_path}")
+            chromedriver_path = chromedriver_autoinstaller.install()  # Get path directly
             os.system(f"chmod +x {chromedriver_path}")
-            logger.info("✅ ChromeDriver installed successfully.")
+            logger.info(f"✅ ChromeDriver installed at {chromedriver_path}")
 
         os.environ["GOOGLE_CHROME_BIN"] = chrome_binary_path
-        os.environ["PATH"] += os.pathsep + chrome_dir
+        os.environ["PATH"] += os.pathsep + os.path.dirname(chromedriver_path)
+        logger.info(f"✅ Chrome setup complete: {chrome_binary_path}")
         return chromedriver_path
 
     except Exception as e:
-        logger.error(f"❌ Error installing Chrome: {e}")
+        logger.error(f"❌ Error setting up Chrome: {e}")
         raise
 
 def get_chrome_options():
-    """Sets correct Chrome options for headless execution on Render."""
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = "/tmp/chrome/chrome"
+    chrome_options.binary_location = "/usr/bin/google-chrome"  # Pre-installed path
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -55,7 +45,7 @@ def get_chrome_options():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
     return chrome_options
-
+    
 @app.route('/')
 def home():
     return "✅ Universal Scraper is running!", 200
