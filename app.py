@@ -16,13 +16,13 @@ os.environ["TERM"] = "dumb"
 
 def setup_chrome():
     """Sets up Chrome and ChromeDriver for Render."""
-    chrome_binary_path = "/usr/bin/google-chrome"  # Pre-installed by build.sh
+    chrome_binary_path = "/tmp/chrome-linux64/chrome"  # Updated for portable Chrome
     chromedriver_path = "/tmp/chromedriver"
 
     try:
         if not os.path.exists(chromedriver_path):
             logger.info("❌ ChromeDriver not found. Installing now...")
-            chromedriver_path = chromedriver_autoinstaller.install()  # Get path directly
+            chromedriver_path = chromedriver_autoinstaller.install()  # Returns path
             os.system(f"chmod +x {chromedriver_path}")
             logger.info(f"✅ ChromeDriver installed at {chromedriver_path}")
 
@@ -37,7 +37,7 @@ def setup_chrome():
 
 def get_chrome_options():
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = "/usr/bin/google-chrome"  # Pre-installed path
+    chrome_options.binary_location = "/tmp/chrome-linux64/chrome"  # Updated for portable Chrome
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
