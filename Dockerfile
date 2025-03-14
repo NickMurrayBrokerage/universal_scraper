@@ -36,9 +36,11 @@ RUN pip install chromedriver-autoinstaller==0.6.3
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
+
+# Copy application code (avoid overwriting /usr/local/bin)
 COPY . .
 
-# Download and install portable Chrome to a persistent location with enhanced debug
+# Download and install portable Chrome to a persistent location with enhanced debug (final step)
 RUN echo "Starting Chrome download..." \
     && wget -v -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/134.0.6998.88/linux64/chrome-linux64.zip || { echo "wget failed"; exit 1; } \
     && ls -l /tmp/chrome-linux.zip \
@@ -46,7 +48,7 @@ RUN echo "Starting Chrome download..." \
     && unzip -q /tmp/chrome-linux.zip -d /opt/chrome || { echo "unzip failed"; exit 1; } \
     && ls -l /opt/chrome/chrome-linux64/ \
     && mv /opt/chrome/chrome-linux64/chrome /usr/local/bin/chrome || { echo "mv failed"; exit 1; } \
-    && chmod +x /usr/local/bin/chrome \
+    && chmod 755 /usr/local/bin/chrome \
     && ls -l /usr/local/bin/chrome \
     && echo "Chrome installation completed"
 
@@ -56,12 +58,9 @@ RUN /usr/local/bin/chrome --version
 # Set environment variable for Chrome
 ENV GOOGLE_CHROME_BIN=/usr/local/bin/chrome
 
-# Create entrypoint script for runtime debug
-RUN echo "#!/bin/bash" > /entrypoint.sh \
-    && echo "echo 'Checking Chrome binary at runtime...'" >> /entrypoint.sh \
-    && echo "ls -l /usr/local/bin/chrome" >> /entrypoint.sh \
-    && echo "exec gunicorn --bind 0.0.0.0:\$PORT app:app" >> /entrypoint.sh \
-    && chmod +x /entrypoint.sh
+# Copy and set up entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Run the app with Gunicorn using entrypoint for debug
 CMD ["/entrypoint.sh"]
