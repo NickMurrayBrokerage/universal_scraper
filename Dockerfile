@@ -50,5 +50,5 @@ COPY . .
 # Set environment variable for Chrome
 ENV GOOGLE_CHROME_BIN=/usr/local/bin/chrome
 
-# Run the app with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "app:app"]
+# Run the app with Gunicorn using shell form for environment variable expansion
+CMD gunicorn --bind 0.0.0.0:$PORT app:app
