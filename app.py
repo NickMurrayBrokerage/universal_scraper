@@ -16,13 +16,15 @@ os.environ["TERM"] = "dumb"
 
 def setup_chrome():
     """Sets up Chrome and ChromeDriver for Render."""
-    chrome_binary_path = "/tmp/chrome-linux64/chrome"  # Updated for portable Chrome
+    chrome_binary_path = os.environ.get("GOOGLE_CHROME_BIN", "/usr/local/bin/chrome")
     chromedriver_path = "/tmp/chromedriver"
 
     try:
         if not os.path.exists(chromedriver_path):
             logger.info("❌ ChromeDriver not found. Installing now...")
             chromedriver_path = chromedriver_autoinstaller.install()  # Returns path
+            if not chromedriver_path:
+                raise Exception("Failed to install ChromeDriver")
             os.system(f"chmod +x {chromedriver_path}")
             logger.info(f"✅ ChromeDriver installed at {chromedriver_path}")
 
@@ -36,8 +38,9 @@ def setup_chrome():
         raise
 
 def get_chrome_options():
+    chrome_binary_path = os.environ.get("GOOGLE_CHROME_BIN", "/usr/local/bin/chrome")
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = "/tmp/chrome-linux64/chrome"  # Updated for portable Chrome
+    chrome_options.binary_location = chrome_binary_path
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -45,7 +48,7 @@ def get_chrome_options():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
     return chrome_options
-    
+  
 @app.route('/')
 def home():
     return "✅ Universal Scraper is running!", 200

@@ -29,14 +29,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install portable Chrome to a persistent location
-RUN wget -q -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/130.0.6723.69/linux64/chrome-linux64.zip \
+# Download and install portable Chrome to a persistent location with enhanced debug
+RUN echo "Starting Chrome download..." \
+    && wget -v -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/130.0.6723.69/linux64/chrome-linux64.zip \
     && ls -l /tmp/chrome-linux.zip \
-    && unzip -q /tmp/chrome-linux.zip -d /tmp \
-    && ls -l /tmp/chrome-linux64/chrome \
-    && mv /tmp/chrome-linux64/chrome /usr/local/bin/chrome \
+    && mkdir -p /opt/chrome \
+    && unzip -q /tmp/chrome-linux.zip -d /opt/chrome \
+    && ls -l /opt/chrome/chrome-linux64/ \
+    && mv /opt/chrome/chrome-linux64/chrome /usr/local/bin/chrome \
     && chmod +x /usr/local/bin/chrome \
-    && ls -l /usr/local/bin/chrome
+    && ls -l /usr/local/bin/chrome \
+    && echo "Chrome installation completed"
 
 # Verify Chrome installation
 RUN /usr/local/bin/chrome --version
