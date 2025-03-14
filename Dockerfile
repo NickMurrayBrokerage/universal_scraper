@@ -1,7 +1,15 @@
 FROM python:3.11-slim
 
-# Install build tools and dependencies
-RUN apt-get update && apt-get install -y wget unzip
+# Install build tools, dependencies, and libraries required by Chrome
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    libglib2.0-0 \
+    libgobject-2.0-0 \
+    libgtk-3-0 \
+    libdbus-1-3 \
+    libxt6 \
+    x11-utils
 
 # Download and install portable Chrome to a persistent location
 RUN wget -q -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.58/linux64/chrome-linux64.zip \
