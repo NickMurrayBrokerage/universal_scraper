@@ -19,3 +19,7 @@ ENV GOOGLE_CHROME_BIN=/usr/local/bin/chrome
  
 # Run the app with Gunicorn 
 CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "app:app"] 
+
+RUN pip install chromedriver-autoinstaller==0.6.3
+
+RUN ls -l /usr/local/bin/chrome
