@@ -30,10 +30,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install portable Chrome to a persistent location
-RUN wget -q -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.58/linux64/chrome-linux64.zip \
+RUN wget -q -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/130.0.6723.69/linux64/chrome-linux64.zip \
+    && ls -l /tmp/chrome-linux.zip \
     && unzip -q /tmp/chrome-linux.zip -d /tmp \
+    && ls -l /tmp/chrome-linux64/chrome \
     && mv /tmp/chrome-linux64/chrome /usr/local/bin/chrome \
-    && chmod +x /usr/local/bin/chrome
+    && chmod +x /usr/local/bin/chrome \
+    && ls -l /usr/local/bin/chrome
 
 # Verify Chrome installation
 RUN /usr/local/bin/chrome --version
