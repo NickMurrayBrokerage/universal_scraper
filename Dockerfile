@@ -1,9 +1,10 @@
-FROM ubuntu:20.04
+FROM python:3.11-slim
 
-RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list \
-    && echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list
+# Install GPG and add Debian repository keys
+RUN apt-get update && apt-get install -y gnupg \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 6ED0E7B82643E131 605C66F00D6C9793 112695A0E562B32A 54404762BBB6E853
 
-# Configure apt sources and install build tools and dependencies
+# Install build tools, dependencies, and libraries required by Chrome
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     unzip \
