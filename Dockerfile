@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Download and install portable Chrome to a persistent location with enhanced debug
 RUN echo "Starting Chrome download..." \
-    && wget -v -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/130.0.6723.69/linux64/chrome-linux64.zip \
+    && wget -v -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/134.0.6998.88/linux64/chrome-linux64.zip \
     && ls -l /tmp/chrome-linux.zip \
     && mkdir -p /opt/chrome \
     && unzip -q /tmp/chrome-linux.zip -d /opt/chrome \
