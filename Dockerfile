@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM debian:bullseye-slim
 
 # Install build tools, dependencies, and libraries required by Chrome
 RUN apt-get update && apt-get install -y \
@@ -9,7 +9,10 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     libdbus-1-3 \
     libxt6 \
-    x11-utils
+    x11-utils \
+    --no-install-recommends \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Download and install portable Chrome to a persistent location
 RUN wget -q -O /tmp/chrome-linux.zip https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.58/linux64/chrome-linux64.zip \
