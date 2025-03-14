@@ -1,1 +1,41 @@
-"scrapers/" 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.env
+
+# Docker
+Dockerfile*
+docker-compose*
+*.dockerignore
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Render specific
+render.yaml.bak
+render.log
+
+# Project-specific
+scrapers/
+universal_scraper.py  # Assuming this is an unused or old file

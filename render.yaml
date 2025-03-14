@@ -1,8 +1,6 @@
 services:
   - type: web
-    name: universal-scraper
-    env: python
-    plan: free
-    buildCommand: "./build.sh"
-    startCommand: "python app.py"
+    name: universal_scraper-1
+    env: docker
+    plan: starter  # Or 'standard' for more resources
     autoDeploy: true
